@@ -24,13 +24,15 @@ export default function LocalLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [mode, setMode] = useState<'login' | 'register' | 'confirm'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'confirm' | 'forgot' | 'reset'>('login');
   const [code, setCode] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || (mode !== 'confirm' && !password) || (mode === 'confirm' && !code)) {
-      setError(mode === 'confirm' ? '请输入邮箱和验证码' : '请输入邮箱和密码');
+    const needsPassword = !['confirm', 'forgot'].includes(mode);
+    const needsCode = ['confirm', 'reset'].includes(mode);
+    if (!username || (needsPassword && !password) || (needsCode && !code)) {
+      setError(needsCode ? '请输入邮箱、验证码和新密码' : needsPassword ? '请输入邮箱和密码' : '请输入邮箱');
       return;
     }
 
@@ -49,6 +51,18 @@ export default function LocalLoginPage() {
         await authApi.confirmRegistration(username, code);
         setMode('login');
         setNotice('邮箱已验证，请使用新账号登录。');
+        return;
+      }
+      if (mode === 'forgot') {
+        await authApi.beginPasswordReset(username);
+        setMode('reset');
+        setNotice('重置验证码已发送到邮箱，请设置新密码。');
+        return;
+      }
+      if (mode === 'reset') {
+        await authApi.confirmPasswordReset(username, code, password);
+        setMode('login');
+        setNotice('密码已重设，请使用新密码登录。');
         return;
       }
       const res = await authApi.localLogin(username, password) as any;
@@ -86,7 +100,7 @@ export default function LocalLoginPage() {
             <img src="/ca/ca2.png" alt="知问" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-text-primary mb-2">知问</h1>
-          <p className="text-text-secondary text-sm">{mode === 'login' ? '使用注册邮箱登录' : mode === 'register' ? '注册新账号' : '验证邮箱'}</p>
+          <p className="text-text-secondary text-sm">{mode === 'login' ? '使用注册邮箱登录' : mode === 'register' ? '注册新账号' : mode === 'confirm' ? '验证邮箱' : mode === 'forgot' ? '找回密码' : '设置新密码'}</p>
         </div>
 
         {/* 登录表单 */}
@@ -117,7 +131,7 @@ export default function LocalLoginPage() {
             </div>
 
             {/* 密码 */}
-            {mode !== 'confirm' && <div>
+            {!['confirm', 'forgot'].includes(mode) && <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">
                 密码
               </label>
@@ -140,7 +154,7 @@ export default function LocalLoginPage() {
               </div>
             </div>}
 
-            {mode === 'confirm' && <div>
+            {['confirm', 'reset'].includes(mode) && <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">邮箱验证码</label>
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="请输入验证码" className="w-full px-3 py-2.5 text-sm border border-brand-border rounded-lg outline-none focus:border-brand bg-bg-page" autoComplete="one-time-code" />
             </div>}
@@ -159,7 +173,7 @@ export default function LocalLoginPage() {
               ) : (
                 <>
                   <LogIn size={16} />
-                  {mode === 'login' ? '登录' : mode === 'register' ? '注册并发送验证码' : '确认注册'}
+                  {mode === 'login' ? '登录' : mode === 'register' ? '注册并发送验证码' : mode === 'confirm' ? '确认注册' : mode === 'forgot' ? '发送重置验证码' : '确认重设密码'}
                 </>
               )}
             </button>
@@ -176,17 +190,12 @@ export default function LocalLoginPage() {
           </div>
 
           {/* 注册入口 */}
-          <button
-            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setNotice(''); }}
-            className="w-full py-2.5 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand-light transition-all"
-          >
-            {mode === 'login' ? '注册新账号' : '返回登录'}
-          </button>
+          {mode === 'login' ? <div className="space-y-2"><button onClick={() => { setMode('register'); setError(''); setNotice(''); }} className="w-full py-2.5 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand-light transition-all">注册新账号</button><button onClick={() => { setMode('forgot'); setError(''); setNotice(''); }} className="w-full text-sm text-text-secondary hover:text-brand">忘记密码</button></div> : <button onClick={() => { setMode('login'); setError(''); setNotice(''); }} className="w-full py-2.5 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand-light transition-all">返回登录</button>}
         </div>
 
         {/* 底部提示 */}
         <p className="text-center text-xs text-text-secondary mt-6">
-          忘记密码？请联系管理员重置
+          密码重置会发送验证码到注册邮箱
         </p>
       </div>
     </div>

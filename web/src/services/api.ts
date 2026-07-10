@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
-import { confirmSignUp, fetchAuthSession, getCurrentUser, signIn, signOut, signUp } from 'aws-amplify/auth';
+import { confirmResetPassword, confirmSignUp, fetchAuthSession, getCurrentUser, resetPassword, signIn, signOut, signUp } from 'aws-amplify/auth';
 import { downloadData, uploadData } from 'aws-amplify/storage';
 import { queryClient, queryKeys } from './query-client';
 
@@ -48,6 +48,8 @@ export const authApi = {
     return { needsConfirmation: !result.isSignUpComplete };
   },
   confirmRegistration: async (email: string, code: string) => confirmSignUp({ username: email, confirmationCode: code }),
+  beginPasswordReset: async (email: string) => resetPassword({ username: email }),
+  confirmPasswordReset: async (email: string, code: string, password: string) => confirmResetPassword({ username: email, confirmationCode: code, newPassword: password }),
 };
 
 export const userApi = {
