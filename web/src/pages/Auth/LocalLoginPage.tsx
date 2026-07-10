@@ -4,6 +4,16 @@ import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
 import { authApi } from '../../services/api';
 
+function getAuthErrorMessage(error: any) {
+  switch (error?.name) {
+    case 'NotAuthorizedException': return '邮箱或密码错误。请使用注册时填写的邮箱登录。';
+    case 'UserNotConfirmedException': return '邮箱尚未验证，请完成邮箱验证码确认。';
+    case 'PasswordResetRequiredException': return '该账号需要重置密码后才能登录。';
+    case 'UserAlreadyAuthenticatedException': return '当前已有登录会话，请刷新页面后重试。';
+    default: return error?.message || '操作失败，请稍后重试。';
+  }
+}
+
 export default function LocalLoginPage() {
   const navigate = useNavigate();
   const { setToken, setUser } = useAuthStore();
@@ -61,7 +71,7 @@ export default function LocalLoginPage() {
         navigate('/', { replace: true });
       }
     } catch (err: any) {
-      setError(err.message || '登录失败，请稍后重试');
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -76,7 +86,7 @@ export default function LocalLoginPage() {
             <img src="/ca/ca2.png" alt="知问" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-text-primary mb-2">知问</h1>
-          <p className="text-text-secondary text-sm">{mode === 'login' ? '邮箱登录' : mode === 'register' ? '注册新账号' : '验证邮箱'}</p>
+          <p className="text-text-secondary text-sm">{mode === 'login' ? '使用注册邮箱登录' : mode === 'register' ? '注册新账号' : '验证邮箱'}</p>
         </div>
 
         {/* 登录表单 */}
