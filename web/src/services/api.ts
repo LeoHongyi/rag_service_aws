@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
-import { confirmSignUp, fetchAuthSession, getCurrentUser, signIn, signUp } from 'aws-amplify/auth';
+import { confirmSignUp, fetchAuthSession, getCurrentUser, signIn, signOut, signUp } from 'aws-amplify/auth';
 import { downloadData, uploadData } from 'aws-amplify/storage';
 import { queryClient, queryKeys } from './query-client';
 
@@ -30,7 +30,16 @@ export const authApi = {
     return { token: session.tokens?.accessToken?.toString() };
   },
   localLogin: async (username: string, password: string) => {
-    await signIn({ username, password });
+    try {
+      await signIn({ username, password });
+    } catch (error: any) {
+      if (error?.name !== 'UserAlreadyAuthenticatedException') throw error;
+      const current = await getCurrentUser();
+      if (current.username !== username) {
+        await signOut();
+        await signIn({ username, password });
+      }
+    }
     const session = await fetchAuthSession();
     return { accessToken: session.tokens?.accessToken?.toString(), user: await userApi.getProfile(), mustChangePassword: false };
   },
