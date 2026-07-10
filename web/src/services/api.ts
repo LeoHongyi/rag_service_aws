@@ -29,12 +29,18 @@ export const authApi = {
     const session = await fetchAuthSession();
     return { token: session.tokens?.accessToken?.toString() };
   },
+  localLogin: async (username: string, password: string) => {
+    await signIn({ username, password });
+    const session = await fetchAuthSession();
+    return { accessToken: session.tokens?.accessToken?.toString(), user: await userApi.getProfile(), mustChangePassword: false };
+  },
 };
 
 export const userApi = {
   getProfile: async () => {
     const user = await getCurrentUser();
-    const profile = value<any>(await client.models.UserProfile.get({ id: user.userId }));
+    let profile = value<any>(await client.models.UserProfile.get({ id: user.userId }));
+    if (!profile) profile = value<any>(await client.models.UserProfile.create({ id: user.userId, displayName: user.username, planType: 'FREE', tokenBalance: 100000, imagesUsed: 0, isDisabled: false }));
     const groups = (await fetchAuthSession()).tokens?.accessToken?.payload['cognito:groups'] as string[] | undefined;
     return { id: user.userId, openid: user.userId, nickname: profile?.displayName ?? user.username, avatar: profile?.avatarKey, plan_type: profile?.planType?.toLowerCase() ?? 'free', is_member: profile?.planType && profile.planType !== 'FREE' ? 1 : 0, tokens_remaining: profile?.tokenBalance ?? 100000, is_admin: groups?.includes('ADMIN') ? 1 : 0, images_used: profile?.imagesUsed ?? 0 };
   },

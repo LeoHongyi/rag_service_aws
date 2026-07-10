@@ -1,4 +1,4 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { BedrockRuntimeClient, ConverseCommand, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 
 const bedrock = new BedrockRuntimeClient({});
 const encoder = new TextEncoder();
@@ -43,9 +43,14 @@ export function cosineSimilarity(left: number[], right: number[]): number {
 }
 
 export async function answerQuestion(question: string, context: string): Promise<string> {
-  const response = await bedrock.send(new InvokeModelCommand({
-    modelId: process.env.CHAT_MODEL_ID ?? 'anthropic.claude-3-haiku-20240307-v1:0', contentType: 'application/json', accept: 'application/json',
-    body: encoder.encode(JSON.stringify({ anthropic_version: 'bedrock-2023-05-31', max_tokens: 1024, messages: [{ role: 'user', content: `请仅根据以下知识库内容回答问题。若内容不足，请明确说明。\n\n知识库：\n${context}\n\n问题：${question}` }] })),
+  const response = await bedrock.send(new ConverseCommand({
+    modelId: process.env.CHAT_MODEL_ID ?? 'qwen.qwen3-32b-v1:0',
+    system: [{ text: '你是中文知识库助手。请准确、简洁地回答；当上下文不足时，明确说明无法从已提供内容确定。' }],
+    messages: [{ role: 'user', content: [{ text: `上下文：\n${context}\n\n问题：${question}` }] }],
+    inferenceConfig: { maxTokens: 1024, temperature: 0.3 },
   }));
-  return JSON.parse(decoder.decode(response.body)).content[0].text as string;
+  const content = response.output?.message?.content ?? [];
+  const text = content.find((block) => 'text' in block)?.text;
+  if (!text) throw new Error('Chat model returned no text response.');
+  return text;
 }

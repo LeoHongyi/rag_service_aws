@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
-import http from '../../services/api';
+import { authApi } from '../../services/api';
 
 export default function LocalLoginPage() {
   const navigate = useNavigate();
@@ -25,10 +25,7 @@ export default function LocalLoginPage() {
     setError('');
 
     try {
-      const res = await http.post('/api/auth/local/login', {
-        username,
-        password,
-      }) as any;
+      const res = await authApi.localLogin(username, password) as any;
 
       if (res.error) {
         setError(res.error);

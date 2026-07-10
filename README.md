@@ -17,7 +17,7 @@ The initial indexing mutation accepts `.txt` and `.md` content. File uploads are
 1. Node.js 20 or newer and AWS credentials configured for the target account.
 2. Enable access to the configured Bedrock models in the target region. Defaults:
    - `amazon.titan-embed-text-v2:0`
-   - `anthropic.claude-3-haiku-20240307-v1:0`
+   - `qwen.qwen3-32b-v1:0`
 3. Install dependencies with `npm install`.
 
 ## Deploy
@@ -28,6 +28,14 @@ For a development environment:
 npm run sandbox
 ```
 
+In a second terminal, start the React application:
+
+```bash
+npm run dev:web
+```
+
+The sandbox writes `amplify_outputs.json` into `web/public/`, so the Vite application automatically connects to the same Cognito, AppSync, S3, and Lambda resources.
+
 For Amplify Hosting CI, connect this repository in the Amplify Console and set `AWS_APP_ID` and `AWS_BRANCH`. The committed `amplify.yml` deploys the backend and publishes the React application.
 
 ```bash
@@ -35,7 +43,7 @@ npm ci
 npm run deploy
 ```
 
-Set `EMBEDDING_MODEL_ID` and `CHAT_MODEL_ID` as Amplify function environment variables only when using different Bedrock models. The Lambda role also needs `bedrock:InvokeModel` for those model ARNs; add this least-privilege permission in the Amplify deployment role or extend `amplify/backend.ts` with the account's approved model ARNs.
+Chat uses the Bedrock Converse API, so Qwen and compatible DeepSeek models can share the same Lambda code. Change `CHAT_MODEL_ID` in both function resource files to a model ID available in the selected AWS Region before deployment. The Lambda role also needs `bedrock:InvokeModel` for the selected model ARN.
 
 ## API
 
