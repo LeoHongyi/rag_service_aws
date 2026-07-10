@@ -842,7 +842,7 @@ export default function ChatSidebar({ onClose }: { onClose?: () => void } = {}) 
                 />
               </div>
               <p className="text-xs text-text-secondary text-center leading-relaxed">
-                扫码加微信，加入 AI 小夕开发交流群
+                扫码加微信，加入知问开发交流群
               </p>
             </div>
           </div>

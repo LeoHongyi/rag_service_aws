@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
               <ShieldCheck size={26} className="text-white" />
             </div>
             <h1 className="text-xl font-bold text-text-primary">管理员登录</h1>
-            <p className="text-sm text-text-secondary mt-1">AI 小夕 · 后台管理系统</p>
+            <p className="text-sm text-text-secondary mt-1">知问 · 后台管理系统</p>
           </div>
 
           {/* 表单 */}

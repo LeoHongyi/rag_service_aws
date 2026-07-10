@@ -179,8 +179,8 @@ export default function AdminPage() {
           <ArrowLeft size={16} />
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <img src="/ca/ca2.png" alt="AI 小夕" className="w-6 h-6 object-contain" />
-          <h1 className="font-semibold text-text-primary">AI 小夕 · 管理后台</h1>
+          <img src="/ca/ca2.png" alt="知问" className="w-6 h-6 object-contain" />
+          <h1 className="font-semibold text-text-primary">知问 · 管理后台</h1>
         </div>
         <div className="flex items-center gap-2 text-xs text-text-secondary">
           <span className="px-2 py-1 bg-brand-light text-brand rounded-full font-medium">

@@ -618,7 +618,7 @@ export default function ChatMessages() {
             <Briefcase size={40} className="text-white" />
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-text-primary mb-2">求职助手小夕</h2>
+            <h2 className="text-xl font-semibold text-text-primary mb-2">求职助手知问</h2>
             <p className="text-text-secondary text-sm max-w-sm">
               专属职业发展顾问，帮你优化简历、辅导面试、规划职业路径
             </p>
@@ -690,7 +690,7 @@ export default function ChatMessages() {
         </div>
         <div className="text-center">
           <h2 className="text-xl font-semibold text-text-primary mb-2">
-            <TypewriterText text="您好，我是您的专属AI助理，我叫小夕" />
+            <TypewriterText text="您好，我是您的专属AI助理，我叫知问" />
           </h2>
           <p className="text-text-secondary text-sm">点击左侧新建对话，或直接输入问题开始聊天</p>
         </div>

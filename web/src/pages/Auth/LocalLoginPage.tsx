@@ -73,9 +73,9 @@ export default function LocalLoginPage() {
         {/* Logo 和标题 */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#044AE9] shadow-lg mb-4">
-            <img src="/ca/ca2.png" alt="AI 小夕" className="w-10 h-10 object-contain" />
+            <img src="/ca/ca2.png" alt="知问" className="w-10 h-10 object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary mb-2">AI 小夕</h1>
+          <h1 className="text-2xl font-bold text-text-primary mb-2">知问</h1>
           <p className="text-text-secondary text-sm">{mode === 'login' ? '邮箱登录' : mode === 'register' ? '注册新账号' : '验证邮箱'}</p>
         </div>
 

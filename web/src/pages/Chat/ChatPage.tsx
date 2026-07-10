@@ -145,7 +145,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-2">
             <img
               src="/ca/ca2.png"
-              alt="AI 小夕"
+              alt="知问"
               className="w-7 h-7 object-contain"
               draggable={false}
             />
@@ -155,7 +155,7 @@ export default function ChatPage() {
               className="w-7 h-7 object-contain"
               draggable={false}
             />
-            <span className="font-semibold text-sm text-text-primary">AI 小夕</span>
+            <span className="font-semibold text-sm text-text-primary">知问</span>
             <span className="hidden sm:inline-flex text-[10px] font-semibold text-brand bg-brand-light border border-brand/30 rounded-full px-1.5 py-0.5 leading-none tracking-wide">RAG知识库</span>
             {/* 免责声明 tag */}
             <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-300 text-amber-700 text-[10px] font-medium rounded-full leading-none">
