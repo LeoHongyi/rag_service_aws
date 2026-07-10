@@ -80,6 +80,7 @@ export default function KnowledgePage() {
   const [newDesc, setNewDesc] = useState('');
   const [newPublic, setNewPublic] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   // delete confirm modal
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -159,6 +160,7 @@ export default function KnowledgePage() {
   async function handleCreate() {
     if (!newName.trim()) return;
     setCreating(true);
+    setCreateError('');
     try {
       const kb = await knowledgeApi.createBase({
         name: newName.trim(),
@@ -170,8 +172,8 @@ export default function KnowledgePage() {
       setNewName('');
       setNewDesc('');
       setNewPublic(false);
-    } catch {
-      // silent
+    } catch (error: any) {
+      setCreateError(error?.message || '创建失败，请确认已登录且后端部署成功。');
     } finally {
       setCreating(false);
     }
@@ -488,6 +490,7 @@ export default function KnowledgePage() {
                   公共知识库（所有用户可使用）
                 </label>
               )}
+              {createError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{createError}</p>}
             </div>
             <div className="flex gap-3 mt-6 justify-end">
               <button
