@@ -13,18 +13,34 @@ export default function LocalLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [mode, setMode] = useState<'login' | 'register' | 'confirm'>('login');
+  const [code, setCode] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) {
-      setError('请输入账号和密码');
+    if (!username || (mode !== 'confirm' && !password) || (mode === 'confirm' && !code)) {
+      setError(mode === 'confirm' ? '请输入邮箱和验证码' : '请输入邮箱和密码');
       return;
     }
 
     setLoading(true);
     setError('');
+    setNotice('');
 
     try {
+      if (mode === 'register') {
+        await authApi.register(username, password);
+        setMode('confirm');
+        setNotice('验证码已发送到邮箱，请填写后完成注册。');
+        return;
+      }
+      if (mode === 'confirm') {
+        await authApi.confirmRegistration(username, code);
+        setMode('login');
+        setNotice('邮箱已验证，请使用新账号登录。');
+        return;
+      }
       const res = await authApi.localLogin(username, password) as any;
 
       if (res.error) {
@@ -60,12 +76,12 @@ export default function LocalLoginPage() {
             <img src="/ca/ca2.png" alt="AI 小夕" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-text-primary mb-2">AI 小夕</h1>
-          <p className="text-text-secondary text-sm">账号密码登录</p>
+          <p className="text-text-secondary text-sm">{mode === 'login' ? '邮箱登录' : mode === 'register' ? '注册新账号' : '验证邮箱'}</p>
         </div>
 
         {/* 登录表单 */}
         <div className="bg-white rounded-2xl shadow-lg border border-brand-border p-6">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* 错误提示 */}
             {error && (
               <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
@@ -73,24 +89,25 @@ export default function LocalLoginPage() {
                 <span>{error}</span>
               </div>
             )}
+            {notice && <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700">{notice}</div>}
 
             {/* 账号 */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">
-                登录账号
+                邮箱
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="请输入账号"
+                placeholder="name@example.com"
+                autoComplete="email"
                 className="w-full px-3 py-2.5 text-sm border border-brand-border rounded-lg outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all bg-bg-page"
-                autoComplete="username"
               />
             </div>
 
             {/* 密码 */}
-            <div>
+            {mode !== 'confirm' && <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">
                 密码
               </label>
@@ -99,7 +116,7 @@ export default function LocalLoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="请输入密码"
+                placeholder="至少 8 位，含大小写字母、数字和符号"
                   className="w-full px-3 py-2.5 pr-10 text-sm border border-brand-border rounded-lg outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all bg-bg-page"
                   autoComplete="current-password"
                 />
@@ -111,7 +128,12 @@ export default function LocalLoginPage() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-            </div>
+            </div>}
+
+            {mode === 'confirm' && <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">邮箱验证码</label>
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="请输入验证码" className="w-full px-3 py-2.5 text-sm border border-brand-border rounded-lg outline-none focus:border-brand bg-bg-page" autoComplete="one-time-code" />
+            </div>}
 
             {/* 登录按钮 */}
             <button
@@ -122,18 +144,18 @@ export default function LocalLoginPage() {
               {loading ? (
                 <>
                   <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  登录中...
+                  提交中...
                 </>
               ) : (
                 <>
                   <LogIn size={16} />
-                  登录
+                  {mode === 'login' ? '登录' : mode === 'register' ? '注册并发送验证码' : '确认注册'}
                 </>
               )}
             </button>
           </form>
 
-          {/* 分割线 */}
+          {/* 登录模式切换 */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-brand-border"></div>
@@ -143,12 +165,12 @@ export default function LocalLoginPage() {
             </div>
           </div>
 
-          {/* SSO 登录入口 */}
+          {/* 注册入口 */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setNotice(''); }}
             className="w-full py-2.5 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand-light transition-all"
           >
-            使用微信扫码登录
+            {mode === 'login' ? '注册新账号' : '返回登录'}
           </button>
         </div>
 

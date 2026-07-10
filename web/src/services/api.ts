@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/data';
-import { fetchAuthSession, getCurrentUser, signIn } from 'aws-amplify/auth';
+import { confirmSignUp, fetchAuthSession, getCurrentUser, signIn, signUp } from 'aws-amplify/auth';
 import { downloadData, uploadData } from 'aws-amplify/storage';
 import { queryClient, queryKeys } from './query-client';
 
@@ -34,6 +34,11 @@ export const authApi = {
     const session = await fetchAuthSession();
     return { accessToken: session.tokens?.accessToken?.toString(), user: await userApi.getProfile(), mustChangePassword: false };
   },
+  register: async (email: string, password: string) => {
+    const result = await signUp({ username: email, password, options: { userAttributes: { email } } });
+    return { needsConfirmation: !result.isSignUpComplete };
+  },
+  confirmRegistration: async (email: string, code: string) => confirmSignUp({ username: email, confirmationCode: code }),
 };
 
 export const userApi = {
