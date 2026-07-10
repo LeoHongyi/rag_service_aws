@@ -1,0 +1,21 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm ci --include=dev
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+        - mkdir -p web/public
+        - cp amplify_outputs.json web/public/amplify_outputs.json
+frontend:
+  phases:
+    build:
+      commands:
+        - npm run build:web
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*

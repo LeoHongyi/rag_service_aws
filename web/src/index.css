@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply font-sans text-text-primary bg-white;
+    -webkit-font-smoothing: antialiased;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+@layer components {
+  /* 渐变文字 */
+  .text-gradient {
+    background: linear-gradient(135deg, #165DFF 0%, #044AE9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* 渐变背景按钮 */
+  .btn-primary {
+    @apply bg-gradient-to-r from-[#165DFF] to-[#044AE9] text-white rounded-btn
+           font-medium transition-all duration-200
+           hover:shadow-btn hover:opacity-95 active:opacity-90;
+  }
+
+  /* 次要按钮 */
+  .btn-secondary {
+    @apply bg-white text-text-primary border border-brand-border rounded-btn
+           font-medium transition-all duration-200
+           hover:border-brand hover:text-brand;
+  }
+
+  /* 卡片 */
+  .card {
+    @apply bg-white rounded-card border border-brand-border shadow-card
+           transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-card-hover;
+  }
+
+  /* 侧边栏列表项 */
+  .sidebar-item {
+    @apply flex items-center gap-2 px-3 py-2 rounded-[8px]
+           text-text-secondary text-sm cursor-pointer
+           transition-all duration-200
+           hover:bg-brand-light hover:text-brand;
+  }
+  .sidebar-item.active {
+    @apply bg-brand-light text-brand font-medium;
+  }
+
+  /* 消息气泡 - 用户 */
+  .msg-user {
+    @apply bg-gradient-to-r from-[#165DFF] to-[#044AE9] text-white
+           rounded-[18px] rounded-tr-[4px] px-4 py-3;
+  }
+
+  /* 消息气泡 - AI */
+  .msg-ai {
+    @apply bg-bg-page text-text-primary
+           rounded-[18px] rounded-tl-[4px] px-4 py-3;
+  }
+
+  /* 模式标签 */
+  .mode-tag {
+    @apply px-3 py-1 rounded-full text-xs font-medium
+           border border-brand-border text-text-secondary
+           cursor-pointer transition-all duration-200
+           hover:border-brand hover:text-brand;
+  }
+  .mode-tag.active {
+    @apply bg-gradient-to-r from-[#165DFF] to-[#044AE9] text-white border-transparent;
+  }
+
+  /* 模态框遮罩 */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/40 backdrop-blur-sm z-50
+           flex items-center justify-center;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* 模态框内容 */
+  .modal-content {
+    @apply bg-white rounded-card shadow-modal
+           p-8 w-full mx-4;
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 输入框 */
+  .chat-input {
+    @apply w-full bg-bg-page rounded-input border border-brand-border
+           px-4 py-3 text-sm text-text-primary placeholder-text-secondary
+           outline-none transition-all duration-200
+           focus:border-brand focus:shadow-[0_0_0_3px_rgba(22,93,255,0.1)];
+    resize: none;
+  }
+
+  /* AI 思考内容块 */
+  .reasoning-block {
+    @apply bg-amber-50 border border-amber-200 rounded-[12px] p-3 mb-3
+           text-sm text-amber-800;
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* 流式输出光标 */
+.streaming-cursor::after {
+  content: '▋';
+  animation: blink 0.7s infinite;
+  color: #165DFF;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* AI源码学习按钮 — 流光扫描动画 */
+@keyframes btn-shine {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.btn-shine {
+  background: linear-gradient(
+    90deg,
+    #165DFF 0%,
+    #165DFF 30%,
+    #6BA3FF 48%,
+    #ffffff55 50%,
+    #6BA3FF 52%,
+    #165DFF 70%,
+    #165DFF 100%
+  );
+  background-size: 300% 100%;
+  animation: btn-shine 2.8s linear infinite;
+}
+
+/* Markdown 样式覆盖 */
+.prose pre {
+  @apply bg-gray-900 text-gray-100 rounded-[10px];
+}
+.prose code:not(pre code) {
+  @apply bg-brand-light text-brand px-1.5 py-0.5 rounded text-sm;
+}
+.prose a {
+  @apply text-brand hover:text-brand-dark;
+}
+.prose blockquote {
+  @apply border-l-4 border-brand bg-brand-light/50 rounded-r;
+}
+ .route-loading { min-height: 100vh; display: grid; place-items: center; color: #64748b; background: #f8fafc; }
