@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { chunkText, cosineSimilarity } from '../amplify/functions/shared/rag.js';
+import { operationName } from '../amplify/functions/application/handler.js';
 
 describe('RAG helpers', () => {
   it('uses reference-project chunking defaults with overlap', () => {
@@ -16,5 +17,9 @@ describe('RAG helpers', () => {
 
   it('keeps short non-empty text indexable', () => {
     expect(chunkText('测试')).toEqual(['测试']);
+  });
+
+  it('dispatches Amplify function events without GraphQL resolver info', () => {
+    expect(operationName({ arguments: { conversationId: 'conversation', message: '问题' } })).toBe('completeChat');
   });
 });

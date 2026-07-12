@@ -12,6 +12,15 @@ const iso = (item: any) => ({ ...item, created_at: item.createdAt, updated_at: i
 const snakeBase = (item: any) => ({ ...iso(item), user_id: item.owner, is_public: item.isPublic ? 1 : 0, doc_count: item.documentCount ?? 0, chunk_count: item.chunkCount ?? 0 });
 const snakeDocument = (item: any) => ({ ...iso(item), kb_id: item.knowledgeBaseId, file_type: item.fileType, file_size: item.size ?? 0, chunk_count: item.chunkCount ?? 0, error_msg: item.errorMessage, status: String(item.status ?? '').toLowerCase() });
 const snakeMessage = (item: any) => ({ ...iso(item), conversation_id: item.conversationId, content_type: String(item.contentType ?? 'TEXT').toLowerCase(), reasoning_content: item.reasoningContent, model_used: item.modelUsed, rag_sources: item.ragSources });
+const defaultDashscopeModel = {
+  id: -1,
+  name: '通义千问 Plus',
+  provider: 'qwen',
+  model_id: 'qwen-plus',
+  base_url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  enabled: 1,
+  sort_order: -1,
+};
 const invalidate = (key: readonly unknown[]) => queryClient.invalidateQueries({ queryKey: key });
 
 export default client;
@@ -79,7 +88,12 @@ export const convApi = {
 };
 
 export const modelApi = {
-  list: async () => (value<any[]>(await client.models.ModelConfig.list({ filter: { enabled: { eq: true } } })) ?? []).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)).map((item) => ({ ...iso(item), model_id: item.modelId, enabled: item.enabled ? 1 : 0, sort_order: item.sortOrder ?? 0 })),
+  list: async () => {
+    const models = (value<any[]>(await client.models.ModelConfig.list({ filter: { enabled: { eq: true } } })) ?? [])
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((item) => ({ ...iso(item), model_id: item.modelId, enabled: item.enabled ? 1 : 0, sort_order: item.sortOrder ?? 0 }));
+    return models.length ? models : [defaultDashscopeModel];
+  },
   adminList: async () => modelApi.list(),
   create: async (data: any) => value(await client.models.ModelConfig.create({ name: data.name, provider: data.provider, modelId: data.model_id, baseUrl: data.base_url, enabled: data.enabled !== 0, sortOrder: data.sort_order ?? 0 })),
   update: async (id: string | number, data: any) => value(await client.models.ModelConfig.update({ id: String(id), name: data.name, provider: data.provider, modelId: data.model_id, baseUrl: data.base_url, enabled: data.enabled !== undefined ? Boolean(data.enabled) : undefined, sortOrder: data.sort_order })),

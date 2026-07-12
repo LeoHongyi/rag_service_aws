@@ -14,21 +14,32 @@ const plans = {
   SOURCE: { name: '源码版', amountCents: 49900, tokenBonus: 1000000, imageLimit: 4 },
 } as const;
 
-type GraphqlEvent = { arguments: Record<string, unknown>; identity?: { sub?: string }; info: { fieldName: string } };
+type GraphqlEvent = { arguments: Record<string, unknown>; identity?: { sub?: string }; info?: { fieldName?: string }; fieldName?: string };
 type Chunk = { id: string; documentId: string; content: string; embedding: string; chunkIndex: number };
 
 const table = (name: string) => process.env[`${name.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase()}_TABLE`] as string;
 const now = () => new Date().toISOString();
 
 export const handler = async (event: GraphqlEvent) => {
-  switch (event.info.fieldName) {
+  const operation = operationName(event);
+  switch (operation) {
     case 'completeChat': return completeChat(event);
     case 'generateImage': return generateImage(event);
     case 'createPayment': return createPayment(event);
     case 'paymentPlans': return Object.entries(plans).map(([key, value]) => ({ key, ...value }));
-    default: throw new Error(`Unsupported application operation: ${event.info.fieldName}`);
+    default: throw new Error(`Unsupported application operation: ${operation || 'unknown'}`);
   }
 };
+
+export function operationName(event: GraphqlEvent): string {
+  if (event.info?.fieldName) return event.info.fieldName;
+  if (event.fieldName) return event.fieldName;
+  if ('conversationId' in event.arguments && 'message' in event.arguments) return 'completeChat';
+  if ('prompt' in event.arguments) return 'generateImage';
+  if ('planType' in event.arguments && 'channel' in event.arguments) return 'createPayment';
+  if (!Object.keys(event.arguments).length) return 'paymentPlans';
+  return '';
+}
 
 async function completeChat(event: GraphqlEvent) {
   const owner = event.identity?.sub;

@@ -93,13 +93,13 @@ function ModelDropdown({ models, userModels, currentModelId, currentUserModel, o
       {/* 下拉面板 */}
       {open && (
         <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-brand-border rounded-[12px] shadow-modal z-50 overflow-hidden animate-fade-in">
-          {/* 系统模型（minimax / qwen 隐藏，用户可自行配置 AK） */}
-          {models.filter(m => !['minimax', 'qwen'].includes(m.provider)).length > 0 && (
+          {/* 系统模型 */}
+          {models.length > 0 && (
             <div>
               <div className="px-3 pt-2 pb-1 text-[10px] font-semibold text-text-secondary tracking-wider">
                 系统模型
               </div>
-              {models.filter(m => !['minimax', 'qwen'].includes(m.provider)).map((m) => {
+              {models.map((m) => {
                 const c = providerColor[m.provider] || '#165DFF';
                 const isActive = m.id === currentModelId && !currentUserModel;
                 return (
