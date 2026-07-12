@@ -43,7 +43,7 @@ npm ci
 npm run deploy
 ```
 
-Chat and RAG indexing use DashScope's OpenAI-compatible API. The functions retrieve `zhiwen/dashscope/api-key` at runtime, so never place the key in frontend configuration or Git. Change `CHAT_MODEL_ID` and `EMBEDDING_MODEL_ID` in the function resource files to select another DashScope model. The Bedrock IAM permission remains for the optional Nova image workflow.
+Chat and RAG indexing use DashScope's OpenAI-compatible API at `https://dashscope.aliyuncs.com/compatible-mode/v1`, which matches API keys created in Alibaba Cloud Model Studio (China). The functions retrieve `zhiwen/dashscope/api-key` at runtime, so never place the key in frontend configuration or Git. For an international Model Studio key, change `DASHSCOPE_BASE_URL` to `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`. Change `CHAT_MODEL_ID` and `EMBEDDING_MODEL_ID` in the function resource files to select another DashScope model. The Bedrock IAM permission remains for the optional Nova image workflow.
 
 ## API
 

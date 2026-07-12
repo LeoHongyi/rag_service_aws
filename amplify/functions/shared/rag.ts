@@ -20,7 +20,7 @@ async function getDashscopeApiKey(): Promise<string> {
 }
 
 async function dashscopeRequest<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const response = await fetch(`${process.env.DASHSCOPE_BASE_URL ?? 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'}${path}`, {
+  const response = await fetch(`${process.env.DASHSCOPE_BASE_URL ?? 'https://dashscope.aliyuncs.com/compatible-mode/v1'}${path}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${await getDashscopeApiKey()}`,

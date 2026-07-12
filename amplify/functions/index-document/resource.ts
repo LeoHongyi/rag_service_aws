@@ -6,7 +6,7 @@ export const indexDocument = defineFunction({
   environment: {
     LLM_PROVIDER: 'dashscope',
     EMBEDDING_MODEL_ID: 'text-embedding-v3',
-    DASHSCOPE_BASE_URL: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+    DASHSCOPE_BASE_URL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     DASHSCOPE_SECRET_ID: 'zhiwen/dashscope/api-key',
   },
 });
