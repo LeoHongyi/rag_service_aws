@@ -123,7 +123,17 @@ export const knowledgeApi = {
   deleteBase: async (id: string | number) => value(await client.models.KnowledgeBase.delete({ id: String(id) })),
   listDocuments: async (kbId: string | number) => (value<any[]>(await client.models.Document.list({ filter: { knowledgeBaseId: { eq: String(kbId) } } })) ?? []).map(snakeDocument),
   getStatus: async (kbId: string | number) => { const documents = await knowledgeApi.listDocuments(kbId); return { total: documents.length, ready: documents.filter((item) => item.status === 'ready').length, indexing: documents.filter((item) => item.status === 'indexing').length, failed: documents.filter((item) => item.status === 'failed').length }; },
-  uploadDocument: async (kbId: string | number, file: File) => { if (!/\.(txt|md)$/i.test(file.name)) throw new Error('Amplify 索引端点当前支持 .txt / .md。'); return value<any>(await client.mutations.indexDocument({ knowledgeBaseId: String(kbId), filename: file.name, content: await file.text() })); },
+  uploadDocument: async (kbId: string | number, file: File) => {
+    let content: string;
+    if (/\.(txt|md)$/i.test(file.name)) content = await file.text();
+    else if (/\.docx$/i.test(file.name)) {
+      const mammoth = await import('mammoth/mammoth.browser');
+      const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      content = result.value;
+    } else throw new Error('仅支持 .txt、.md 或 .docx 文档。');
+    if (!content.trim()) throw new Error('文档中没有可索引的文本内容。');
+    return value<any>(await client.mutations.indexDocument({ knowledgeBaseId: String(kbId), filename: file.name, content }));
+  },
   deleteDocument: async (_kbId: string | number, docId: string | number) => value(await client.models.Document.delete({ id: String(docId) })),
   listChunks: async (_kbId: string | number, docId: string | number) => (value<any[]>(await client.models.KnowledgeChunk.list({ filter: { documentId: { eq: String(docId) } } })) ?? []).map((item) => ({ ...iso(item), chunk_index: item.chunkIndex, token_count: item.tokenCount })),
   getPreview: async (_kbId: string | number, docId: string | number) => { const chunks = await knowledgeApi.listChunks('', docId); return { id: String(docId), parsed_content: chunks.sort((a, b) => a.chunk_index - b.chunk_index).map((item) => item.content).join('\n\n') }; },

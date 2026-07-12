@@ -105,6 +105,7 @@ export default function KnowledgePage() {
   // upload
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadBases = useCallback(async () => {
@@ -187,6 +188,7 @@ export default function KnowledgePage() {
     if (!selectedKb || !e.target.files?.length) return;
     const file = e.target.files[0];
     setUploading(true);
+    setUploadError('');
     try {
       await knowledgeApi.uploadDocument(selectedKb.id, file);
       await loadDocs(selectedKb.id);
@@ -203,6 +205,8 @@ export default function KnowledgePage() {
           }
         }, 2000);
       }
+    } catch (error: any) {
+      setUploadError(error?.message || '文档索引请求失败，请稍后重试。');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -383,6 +387,7 @@ export default function KnowledgePage() {
                 className="hidden"
                 onChange={handleUpload}
               />
+              {uploadError && <p className="absolute right-4 top-16 max-w-xs text-xs text-red-600">{uploadError}</p>}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
