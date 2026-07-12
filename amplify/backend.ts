@@ -1,5 +1,5 @@
 import { defineBackend } from '@aws-amplify/backend';
-import { Stack } from 'aws-cdk-lib';
+import { ArnFormat, Stack } from 'aws-cdk-lib';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { auth } from './auth/resource.js';
 import { data } from './data/resource.js';
@@ -13,6 +13,7 @@ const dashscopeSecretArn = (resource: Parameters<typeof Stack.of>[0]) => Stack.o
   service: 'secretsmanager',
   resource: 'secret',
   resourceName: 'zhiwen/dashscope/api-key-*',
+  arnFormat: ArnFormat.COLON_RESOURCE_NAME,
 });
 
 const tables = backend.data.resources.tables;
