@@ -1,8 +1,38 @@
 import { BedrockRuntimeClient, ConverseCommand, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 const bedrock = new BedrockRuntimeClient({});
+const secrets = new SecretsManagerClient({});
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+let dashscopeApiKey: string | undefined;
+
+const provider = () => process.env.LLM_PROVIDER ?? 'dashscope';
+
+async function getDashscopeApiKey(): Promise<string> {
+  if (dashscopeApiKey) return dashscopeApiKey;
+  const secretId = process.env.DASHSCOPE_SECRET_ID;
+  if (!secretId) throw new Error('DASHSCOPE_SECRET_ID is not configured.');
+  const response = await secrets.send(new GetSecretValueCommand({ SecretId: secretId }));
+  if (!response.SecretString) throw new Error('DashScope API key secret has no string value.');
+  dashscopeApiKey = response.SecretString.trim();
+  return dashscopeApiKey;
+}
+
+async function dashscopeRequest<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  const response = await fetch(`${process.env.DASHSCOPE_BASE_URL ?? 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'}${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${await getDashscopeApiKey()}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(`DashScope request failed (${response.status}): ${await response.text()}`);
+  }
+  return response.json() as Promise<T>;
+}
 
 export function chunkText(text: string, chunkSize = 600, overlap = 80): string[] {
   const paragraphs = text.replace(/\r\n?/g, '\n').split(/\n{2,}/).map((part) => part.trim()).filter((part) => part.length >= 20);
@@ -27,6 +57,15 @@ export function chunkText(text: string, chunkSize = 600, overlap = 80): string[]
 }
 
 export async function embed(texts: string[]): Promise<number[][]> {
+  if (provider() === 'dashscope') {
+    const response = await dashscopeRequest<{ data?: Array<{ embedding?: number[]; index?: number }> }>('/embeddings', {
+      model: process.env.EMBEDDING_MODEL_ID ?? 'text-embedding-v3',
+      input: texts,
+    });
+    const vectors = (response.data ?? []).sort((left, right) => (left.index ?? 0) - (right.index ?? 0)).map((item) => item.embedding);
+    if (vectors.length !== texts.length || vectors.some((vector) => !vector?.length)) throw new Error('DashScope embedding response is incomplete.');
+    return vectors as number[][];
+  }
   const response = await bedrock.send(new InvokeModelCommand({
     modelId: process.env.EMBEDDING_MODEL_ID ?? 'amazon.titan-embed-text-v2:0',
     contentType: 'application/json', accept: 'application/json',
@@ -43,6 +82,20 @@ export function cosineSimilarity(left: number[], right: number[]): number {
 }
 
 export async function answerQuestion(question: string, context: string): Promise<string> {
+  if (provider() === 'dashscope') {
+    const response = await dashscopeRequest<{ choices?: Array<{ message?: { content?: string } }> }>('/chat/completions', {
+      model: process.env.CHAT_MODEL_ID ?? 'qwen-plus',
+      messages: [
+        { role: 'system', content: '你是中文知识库助手。请准确、简洁地回答；当上下文不足时，明确说明无法从已提供内容确定。' },
+        { role: 'user', content: `上下文：\n${context}\n\n问题：${question}` },
+      ],
+      max_tokens: 1024,
+      temperature: 0.3,
+    });
+    const text = response.choices?.[0]?.message?.content?.trim();
+    if (!text) throw new Error('DashScope chat model returned no text response.');
+    return text;
+  }
   const response = await bedrock.send(new ConverseCommand({
     modelId: process.env.CHAT_MODEL_ID ?? 'qwen.qwen3-32b-v1:0',
     system: [{ text: '你是中文知识库助手。请准确、简洁地回答；当上下文不足时，明确说明无法从已提供内容确定。' }],

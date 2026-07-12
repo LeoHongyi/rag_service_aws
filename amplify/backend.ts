@@ -1,4 +1,5 @@
 import { defineBackend } from '@aws-amplify/backend';
+import { Stack } from 'aws-cdk-lib';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { auth } from './auth/resource.js';
 import { data } from './data/resource.js';
@@ -8,6 +9,11 @@ import { askKnowledgeBase } from './functions/ask-knowledge-base/resource.js';
 import { application } from './functions/application/resource.js';
 
 const backend = defineBackend({ auth, data, storage, indexDocument, askKnowledgeBase, application });
+const dashscopeSecretArn = (resource: Parameters<typeof Stack.of>[0]) => Stack.of(resource).formatArn({
+  service: 'secretsmanager',
+  resource: 'secret',
+  resourceName: 'zhiwen/dashscope/api-key-*',
+});
 
 const tables = backend.data.resources.tables;
 for (const fn of [backend.indexDocument.resources.lambda, backend.askKnowledgeBase.resources.lambda]) {
@@ -17,6 +23,10 @@ for (const fn of [backend.indexDocument.resources.lambda, backend.askKnowledgeBa
   fn.addToRolePolicy(new PolicyStatement({
     actions: ['bedrock:InvokeModel'],
     resources: ['arn:aws:bedrock:*::foundation-model/*'],
+  }));
+  fn.addToRolePolicy(new PolicyStatement({
+    actions: ['secretsmanager:GetSecretValue'],
+    resources: [dashscopeSecretArn(fn)],
   }));
 }
 
@@ -31,6 +41,10 @@ for (const table of Object.values(tables)) table.grantReadWriteData(backend.appl
 backend.application.resources.lambda.addToRolePolicy(new PolicyStatement({
   actions: ['bedrock:InvokeModel'],
   resources: ['arn:aws:bedrock:*::foundation-model/*'],
+}));
+backend.application.resources.lambda.addToRolePolicy(new PolicyStatement({
+  actions: ['secretsmanager:GetSecretValue'],
+  resources: [dashscopeSecretArn(backend.application.resources.lambda)],
 }));
 for (const [key, table] of Object.entries(tables)) {
   backend.application.addEnvironment(`${key.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase()}_TABLE`, table.tableName);

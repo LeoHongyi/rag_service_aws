@@ -26,6 +26,7 @@
     "@aws-sdk/client-bedrock-runtime": "^3.758.0",
     "@aws-sdk/client-dynamodb": "^3.758.0",
     "@aws-sdk/client-s3": "^3.758.0",
+    "@aws-sdk/client-secrets-manager": "^3.1085.0",
     "@aws-sdk/lib-dynamodb": "^3.758.0",
     "@codemirror/lang-html": "^6.4.11",
     "@codemirror/theme-one-dark": "^6.1.3",

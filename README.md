@@ -7,7 +7,7 @@ This is an AWS Amplify Gen 2 full-stack migration of `AI小夕外挂RAG知识库
 - **Amplify Auth / Cognito**: authenticated user access.
 - **Amplify Data / AppSync / DynamoDB**: knowledge bases, documents, and chunks.
 - **Amplify Storage / S3**: reserved for original-file uploads under `documents/{identityId}/`.
-- **Lambda + Amazon Bedrock**: document indexing, retrieval-augmented answer generation, and application workflows.
+- **Lambda + DashScope**: Qwen chat and embedding-based document indexing and retrieval. Bedrock remains only for the optional Nova image workflow.
 - **React + Amplify client**: chat, knowledge-base, file, order, and management workspace in `web/`.
 
 The initial indexing mutation accepts `.txt` and `.md` content. File uploads are saved to S3 and recorded as attachments. Connect the selected file's extracted text to `indexDocument` for RAG indexing; `.docx` extraction requires a document-parser Lambda layer or provider because Lambda has no native DOCX parser.
@@ -15,9 +15,9 @@ The initial indexing mutation accepts `.txt` and `.md` content. File uploads are
 ## Prerequisites
 
 1. Node.js 20 or newer and AWS credentials configured for the target account.
-2. Enable access to the configured Bedrock models in the target region. Defaults:
-   - `amazon.titan-embed-text-v2:0`
-   - `qwen.qwen3-32b-v1:0`
+2. Create a DashScope API key and store it in AWS Secrets Manager as `zhiwen/dashscope/api-key`. Defaults:
+   - Chat: `qwen-plus`
+   - Embeddings: `text-embedding-v3`
 3. Install dependencies with `npm install`.
 
 ## Deploy
@@ -43,7 +43,7 @@ npm ci
 npm run deploy
 ```
 
-Chat uses the Bedrock Converse API, so Qwen and compatible DeepSeek models can share the same Lambda code. Change `CHAT_MODEL_ID` in both function resource files to a model ID available in the selected AWS Region before deployment. The Lambda role also needs `bedrock:InvokeModel` for the selected model ARN.
+Chat and RAG indexing use DashScope's OpenAI-compatible API. The functions retrieve `zhiwen/dashscope/api-key` at runtime, so never place the key in frontend configuration or Git. Change `CHAT_MODEL_ID` and `EMBEDDING_MODEL_ID` in the function resource files to select another DashScope model. The Bedrock IAM permission remains for the optional Nova image workflow.
 
 ## API
 
