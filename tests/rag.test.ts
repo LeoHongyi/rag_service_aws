@@ -13,4 +13,8 @@ describe('RAG helpers', () => {
   it('scores identical vectors at one', () => {
     expect(cosineSimilarity([1, 2], [1, 2])).toBeCloseTo(1);
   });
+
+  it('keeps short non-empty text indexable', () => {
+    expect(chunkText('测试')).toEqual(['测试']);
+  });
 });

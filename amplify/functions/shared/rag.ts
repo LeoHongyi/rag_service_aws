@@ -35,7 +35,7 @@ async function dashscopeRequest<T>(path: string, body: Record<string, unknown>):
 }
 
 export function chunkText(text: string, chunkSize = 600, overlap = 80): string[] {
-  const paragraphs = text.replace(/\r\n?/g, '\n').split(/\n{2,}/).map((part) => part.trim()).filter((part) => part.length >= 20);
+  const paragraphs = text.replace(/\r\n?/g, '\n').split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
   const chunks: string[] = [];
   let current = '';
   for (const paragraph of paragraphs) {
@@ -52,7 +52,7 @@ export function chunkText(text: string, chunkSize = 600, overlap = 80): string[]
     if (candidate.length <= chunkSize) current = candidate;
     else { chunks.push(current); current = `${current.slice(-overlap)}\n\n${paragraph}`; }
   }
-  if (current.trim().length >= 20) chunks.push(current.trim());
+  if (current.trim()) chunks.push(current.trim());
   return chunks;
 }
 

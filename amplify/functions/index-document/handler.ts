@@ -11,7 +11,7 @@ export const handler: Schema['indexDocument']['functionHandler'] = async (event:
   const { knowledgeBaseId, filename, content } = event.arguments;
   const owner = (event.identity as { sub?: string } | undefined)?.sub;
   if (!owner) throw new Error('Authenticated user identity is required.');
-  if (!/\.(txt|md)$/i.test(filename)) throw new Error('Only .txt and .md documents are supported by this endpoint.');
+  if (!/\.(txt|md|docx)$/i.test(filename)) throw new Error('Only .txt, .md, and .docx documents are supported by this endpoint.');
   if (content.length > 500_000) throw new Error('Document content must not exceed 500 KB.');
 
   const documentId = randomUUID();
